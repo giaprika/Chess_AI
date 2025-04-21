@@ -74,7 +74,6 @@ def process_pgn_with_stockfish(pgn_path, save_dir, stockfish_path):
     progress_path = os.path.join(save_dir, "progress.txt")
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
 
-    chunk_idx = 1
     chunk_data = []
     game_count = 0
     if os.path.exists(progress_path):
@@ -85,6 +84,7 @@ def process_pgn_with_stockfish(pgn_path, save_dir, stockfish_path):
                 game_count = 0
     skip_count = game_count  # số lượng game cần bỏ qua ban đầu
     current_game_index = 0
+    chunk_idx = game_count / 5
 
     with open(pgn_path, 'r', encoding='utf-8') as f:
         while True:
