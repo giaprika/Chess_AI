@@ -102,9 +102,13 @@ def move_to_index(move):
 
 def index_to_move(board, index):
     for move in board.legal_moves:
-        if move_to_index(move) == index:
-            return move
-    return None  # hoặc raise Exception nếu không tìm thấy
+        try:
+            if move_to_index(move) == index:
+                return move
+        except ValueError:
+            continue
+    raise ValueError(f"No legal move found for index {index}")
+
 
 
 def get_policy_vector(board, mcts_node):

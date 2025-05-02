@@ -81,7 +81,7 @@ def run_self_play_worker(worker_id, model_path, games_per_worker):
 def main():
     multiprocessing.set_start_method('spawn', force=True)
 
-    model_path = "model_self_play_1.pt"
+    model_path = "model.pt"
     model = AlphaZeroNet()
     if os.path.exists(model_path):
         model.load_state_dict(torch.load(model_path, map_location=device))
@@ -134,22 +134,22 @@ def main():
         print(f"✅ Model saved to {model_path}")
 
 if __name__ == "__main__":
-    # main()
-    total_data = []
+    main()
+    # total_data = []
     
-    for i in range(1, 13):
-        folder_path = f'./train_data/file_{i}'
-        for file_name in os.listdir(folder_path):
-            if file_name.endswith('.pt'):
-                file_path = os.path.join(folder_path, file_name)
-                data = load_buffer(file_path)
-                total_data = add_games_to_buffer(total_data, data)
-    model_path = "model.pt"
-    model = AlphaZeroNet()
-    if os.path.exists(model_path):
-        model.load_state_dict(torch.load(model_path, map_location=device))
-    trainer = AlphaZeroTrainer(model)
-    trainer.train(total_data)
-    trainer.save_model('model.pt')
+    # for i in range(1, 2):
+    #     folder_path = f'./train_data/file_{i}'
+    #     for file_name in os.listdir(folder_path):
+    #         if file_name.endswith('.pt'):
+    #             file_path = os.path.join(folder_path, file_name)
+    #             data = load_buffer(file_path)
+    #             total_data = add_games_to_buffer(total_data, data)
+    # model_path = "model.pt"
+    # model = AlphaZeroNet()
+    # if os.path.exists(model_path):
+    #     model.load_state_dict(torch.load(model_path, map_location=device))
+    # trainer = AlphaZeroTrainer(model)
+    # trainer.train(total_data)
+    # trainer.save_model('model.pt')
     
     

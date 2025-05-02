@@ -6,7 +6,9 @@ import math
 from tqdm import tqdm
 from model import AlphaZeroNet
 from mcts import MCTS
-from utils import board_to_tensor
+from utils import board_to_tensor, index_to_move, move_to_index
+import os
+import numpy as np
 
 # Đường dẫn tới Stockfish
 STOCKFISH_PATH = "./stockfish/stockfish-windows-x86-64-avx2"  # Đổi nếu cần
@@ -16,14 +18,28 @@ STOCKFISH_ELO = 1350  # Mức thấp nhất mà Stockfish hỗ trợ
 
 # Số ván để đánh giá
 NUM_GAMES = 10
-TIME_LIMIT = 5.0
+TIME_LIMIT = 10.0
 
 # Tải mô hình
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# model = AlphaZeroNet().to(device)
+# checkpoint = torch.load("chess_model_elo2000.pt", map_location=device)
+# model.load_state_dict(checkpoint["model_state_dict"])
+# model.eval()
+
+#Model train by data_from_stockfish
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = AlphaZeroNet().to(device)
-checkpoint = torch.load("chess_model_elo2000.pt", map_location=device)
-model.load_state_dict(checkpoint["model_state_dict"])
-model.eval()
+model_path = 'model_4.pt'
+if os.path.exists(model_path):
+    model.load_state_dict(torch.load(model_path, map_location=device))
+
+def get_best_move(board: chess.Board) -> str:
+    policy, value = model.predict(board)
+    legal_indices = [move_to_index(move) for move in board.legal_moves]
+    best_index = max(legal_indices, key=lambda idx: policy[idx])
+    best_move = index_to_move(board, best_index)
+    return best_move
 
 # Hàm chọn nước đi từ model
 def get_model_move(board: chess.Board) -> str:
@@ -84,6 +100,8 @@ def main():
     print(f"\n✅ Tỉ lệ thắng của model: {score_ratio * 100:.2f}%")
     print(f"📈 Chênh lệch Elo ước lượng: {elo_diff:.1f}")
     print(f"🏅 Elo ước lượng của model: {estimated_elo:.1f}")
+
+    
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,6 @@
 import numpy as np
 import chess
 import time
-from collections import defaultdict
 from utils import move_to_index
 
 class MCTSNode:
@@ -16,26 +15,21 @@ class MCTSNode:
     def is_expanded(self):
         return len(self.children) > 0
 
-    def select_child(self):
-        log_total = np.log(self.visit_count + 1)
+    def select_child(self, c_puct=1.0):  # Đơn giản hóa c_puct = 1.0
         best_score = -np.inf
         best_move = None
         best_child = None
-        c_puct = 2.0
-
+        
         for move, child in self.children.items():
-            if child.visit_count > 0:
-                q_value = child.total_value / child.visit_count
-            else:
-                q_value = 0
-            u_value = c_puct * child.prior * np.sqrt(log_total) / (1 + child.visit_count)
+            q_value = child.total_value / child.visit_count if child.visit_count > 0 else 0
+            u_value = c_puct * child.prior * np.sqrt(self.visit_count) / (1 + child.visit_count)
             score = q_value + u_value
 
             if score > best_score:
                 best_score = score
                 best_move = move
                 best_child = child
-
+                
         return best_move, best_child
 
     def expand(self, policy):
@@ -69,25 +63,17 @@ class MCTSNode:
 
 
 class MCTS:
-    def __init__(self, model, time_limit):
+    def __init__(self, model, time_limit, c_puct=1.0):
         self.model = model
         self.time_limit = time_limit
         self.root = None
+        self.c_puct = c_puct
 
     def search(self, board):
         self.root = MCTSNode(board)
         policy, _ = self.model.predict(board)
 
-        legal_moves = list(board.legal_moves)
-        noise = np.random.dirichlet([0.3] * len(legal_moves))
-        policy_copy = policy.copy()
-
-        for i, move in enumerate(legal_moves):
-            idx = move_to_index(move)
-            p = policy_copy[idx] if policy_copy[idx] > 0 else 1e-8
-            policy_copy[idx] = 0.75 * p + 0.25 * noise[i]
-
-        self.root.expand(policy_copy)
+        self.root.expand(policy)
 
         start_time = time.time()
         simulations = 0
@@ -98,7 +84,7 @@ class MCTS:
 
             # Selection
             while node.is_expanded() and not node.board.is_game_over():
-                move, node = node.select_child()
+                move, node = node.select_child(c_puct=self.c_puct)
                 path.append(node)
 
             # Evaluation
@@ -121,15 +107,7 @@ class MCTS:
 
             simulations += 1
 
-        # Chọn nước đi tốt nhất
-        temperature = 1.0
-        if temperature == 0:
-            best_move = max(self.root.children.items(), key=lambda x: x[1].visit_count)[0]
-        else:
-            counts = np.array([child.visit_count for child in self.root.children.values()])
-            counts = counts ** (1.0 / temperature)
-            probs = counts / np.sum(counts)
-            moves = list(self.root.children.keys())
-            best_move = np.random.choice(moves, p=probs)
+        # Chọn nước đi nhiều visit nhất
+        best_move = max(self.root.children.items(), key=lambda x: x[1].visit_count)[0]
 
         return best_move
