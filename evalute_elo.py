@@ -14,18 +14,11 @@ import numpy as np
 STOCKFISH_PATH = "./stockfish/stockfish-windows-x86-64-avx2"  # Đổi nếu cần
 
 # Elo giả lập cho Stockfish
-STOCKFISH_ELO = 1350  # Mức thấp nhất mà Stockfish hỗ trợ
+STOCKFISH_ELO = 2300  # Mức thấp nhất mà Stockfish hỗ trợ
 
 # Số ván để đánh giá
 NUM_GAMES = 10
 TIME_LIMIT = 10.0
-
-# Tải mô hình
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# model = AlphaZeroNet().to(device)
-# checkpoint = torch.load("chess_model_elo2000.pt", map_location=device)
-# model.load_state_dict(checkpoint["model_state_dict"])
-# model.eval()
 
 #Model train by data_from_stockfish
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -73,6 +66,20 @@ def play_game(engine, model_as_white=True):
         return 0 if model_as_white else 1
     else:
         return 0.5
+    
+def model_get_best_move(board):
+    try:
+        engine = chess.engine.SimpleEngine.popen_uci('./stockfish/stockfish-windows-x86-64-avx2.exe')
+        engine.configure({
+            "UCI_LimitStrength": True,
+            "UCI_Elo": 2400
+        })
+        result = engine.play(board, chess.engine.Limit(time=5.0))  # Giới hạn suy nghĩ
+        move_uci = result.move
+        return move_uci
+    except Exception as e:
+        print(f"[ERROR] in playEngineMove: {e}")
+        return None
 
 # Hàm chính
 def main():

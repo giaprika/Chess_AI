@@ -2,11 +2,16 @@ import os
 
 import pygame
 import chess
-import engine as ce
+import chess.engine
 import threading
 import time
+import torch
 
 from pygame.locals import *
+
+from mcts import MCTS
+from model import AlphaZeroNet
+from evalute_elo import model_get_best_move
 
 # Constants
 WIDTH, HEIGHT = 480, 480
@@ -19,18 +24,18 @@ BLACK = (180, 104, 23)
 pygame.init()
 # Map chess symbols to custom image filenames
 PIECE_IMAGE_MAP = {
-    'P': 'pl',  # White Pawn (Light)
-    'N': 'nl',  # White Knight (Light)
-    'B': 'bl',  # White Bishop (Light)
-    'R': 'rl',  # White Rook (Light)
-    'Q': 'ql',  # White Queen (Light)
-    'K': 'kl',  # White King (Light)
-    'p': 'pd',  # Black Pawn (Dark)
-    'n': 'nd',  # Black Knight (Dark)
-    'b': 'bd',  # Black Bishop (Dark)
-    'r': 'rd',  # Black Rook (Dark)
-    'q': 'qd',  # Black Queen (Dark)
-    'k': 'kd',  # Black King (Dark)
+    'P': 'pw',  # White Pawn (Light)
+    'N': 'nw',  # White Knight (Light)
+    'B': 'bw',  # White Bishop (Light)
+    'R': 'rw',  # White Rook (Light)
+    'Q': 'qw',  # White Queen (Light)
+    'K': 'kw',  # White King (Light)
+    'p': 'pb',  # Black Pawn (Dark)
+    'n': 'nb',  # Black Knight (Dark)
+    'b': 'bb',  # Black Bishop (Dark)
+    'r': 'rb',  # Black Rook (Dark)
+    'q': 'qb',  # Black Queen (Dark)
+    'k': 'kb',  # Black King (Dark)
 }
 
 # Load piece images with custom filenames
@@ -50,7 +55,6 @@ pygame.display.set_caption("Chess GUI")
 
 # Timer
 font = pygame.font.Font(None, 36)
-
 
 def display_game_over():
     result_text = "Game Over"
@@ -72,7 +76,7 @@ class ChessGame:
         self.last_update = pygame.time.get_ticks()
         self.current_turn = chess.WHITE
         self.player_color = None
-        self.model = ""
+        self.model = None
         self.max_time = None
 
     def draw_board(self):
@@ -127,7 +131,7 @@ class ChessGame:
     def run_engine_move(self):
         try:
             print("[AI] Thinking...")
-            best_move = self.playEngineMove(self.model, self.max_time, self.current_turn)
+            best_move = self.bot__play(max_time=10)
             print(f"[AI] Best move: {best_move}")
             
             # ✅ Delay 1s trước khi push nước đi => đảm bảo vẽ ra sau khi delay
@@ -138,16 +142,11 @@ class ChessGame:
             print("[AI] Move done.")
         except Exception as e:
             print(f"[ERROR] AI move failed: {e}")
-
-
-    def playEngineMove(self, model, max_time, color):
-        try:
-            engine = ce.Engine(model, self.board, max_time, color)
-            engine.max_depth = 4
-            return engine.get_best_move()  # ✅ Chỉ trả về move
-        except Exception as e:
-            print(f"[ERROR] in playEngineMove: {e}")
-            return None
+        
+    def bot_play(self, max_time):
+        mcts = MCTS(self.model, time_limit=max_time)
+        move = mcts.search(self.board)
+        return move
 
     def handle_mouse_down(self, event):
         row, col = event.pos[1] // SQ_SIZE, event.pos[0] // SQ_SIZE
@@ -184,6 +183,8 @@ class ChessGame:
         self.selected_square = None
         self.dragging_piece = None
 
+    def bot__play(self, max_time=10):
+        return model_get_best_move(self.board)
 
     def update_timers(self):
         now = pygame.time.get_ticks()
@@ -226,8 +227,13 @@ class ChessGame:
 
     def run(self):
         #self.init()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = AlphaZeroNet().to(device)
+        model_path = 'model.pt'
+        if os.path.exists(model_path):
+            model.load_state_dict(torch.load(model_path, map_location=device))
         self.player_color = chess.WHITE
-        self.model = "data/saved_models/chess_test_model16.365107344799355.pth"
+        self.model = model
         self.max_time = 2
 
         clock = pygame.time.Clock()
