@@ -13,7 +13,7 @@
       <excludeFolder url="file://$MODULE_DIR$/libs" />
       <excludeFolder url="file://$MODULE_DIR$/old" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.13 (G1-chess-ai)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

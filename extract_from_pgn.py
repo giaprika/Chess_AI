@@ -156,12 +156,12 @@ def run_in_parallel(pgn_paths, save_dir, stockfish_path):
 if __name__ == "__main__":
     print("Start đa tiến trình...")
     pgn_files = [
-        "./lichess_db_standard_rated_2013-07.pgn",
-        "./lichess_db_standard_rated_2013-08.pgn",
-        "./lichess_db_standard_rated_2013-09.pgn",
-        "./lichess_db_standard_rated_2013-10.pgn",
-        "./lichess_db_standard_rated_2013-11.pgn",
-        "./lichess_db_standard_rated_2013-12.pgn"
+        "./lichess_db_standard_rated_2014-07.pgn",
+        "./lichess_db_standard_rated_2014-08.pgn",
+        "./lichess_db_standard_rated_2014-09.pgn",
+        "./lichess_db_standard_rated_2014-10.pgn",
+        "./lichess_db_standard_rated_2014-11.pgn",
+        "./lichess_db_standard_rated_2014-12.pgn"
     ]
 
     run_in_parallel(
