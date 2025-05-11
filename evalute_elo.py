@@ -3,6 +3,8 @@ import chess.engine
 import torch
 import random
 import math
+
+from torch.backends.quantized import engine
 from tqdm import tqdm
 from model import AlphaZeroNet
 from mcts import MCTS
@@ -68,6 +70,7 @@ def play_game(engine, model_as_white=True):
         return 0.5
     
 def model_get_best_move(board):
+    engine = None
     try:
         engine = chess.engine.SimpleEngine.popen_uci('./stockfish/stockfish-windows-x86-64-avx2.exe')
         engine.configure({
@@ -80,6 +83,9 @@ def model_get_best_move(board):
     except Exception as e:
         print(f"[ERROR] in playEngineMove: {e}")
         return None
+    finally:
+        if engine is not None:
+            engine.quit()
 
 # Hàm chính
 def main():

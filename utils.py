@@ -120,3 +120,11 @@ def get_policy_vector(board, mcts_node):
         policy[idx] = child.visit_count / total_visits
     
     return policy
+
+def logGameStatus(capturePieces: type({})):
+    print("Display game status:")
+    print("-------------------------White-------------------------")
+    for u, v in capturePieces.items():
+        print(u, v, sep=" : ", end='\n')
+
+    print("-------------------------Black-------------------------")

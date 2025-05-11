@@ -61,13 +61,13 @@ class MCTSNode:
         if self.parent:
             self.parent.backpropagate(-value)
 
-
 class MCTS:
     def __init__(self, model, time_limit, c_puct=1.0):
         self.model = model
         self.time_limit = time_limit
-        self.root = None
         self.c_puct = c_puct
+        self.search_depth = 0
+        self.max_score = 0
 
     def search(self, board):
         self.root = MCTSNode(board)
@@ -107,7 +107,16 @@ class MCTS:
 
             simulations += 1
 
-        # Chọn nước đi nhiều visit nhất
+        # Lấy độ sâu tìm kiếm và điểm số
+        self.search_depth = simulations  # Hoặc tùy chỉnh để tính độ sâu
+        self.max_score = max([child.visit_count for child in self.root.children.values()])
+
         best_move = max(self.root.children.items(), key=lambda x: x[1].visit_count)[0]
 
         return best_move
+
+    def get_search_depth(self):
+        return self.search_depth
+
+    def get_max_score(self):
+        return self.max_score

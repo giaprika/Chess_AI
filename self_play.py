@@ -32,7 +32,7 @@ class SelfPlay:
         colors = ['w', 'b']
         for color in colors:
             for piece in pieces:
-                piece_images[f'{piece}{color}'] = pygame.image.load(f"images/{piece}{color}.png")
+                piece_images[f'{piece}{color}'] = pygame.image.load(f"data/images/chess/{piece}{color}.png")
         return piece_images
 
     def draw_board(self):

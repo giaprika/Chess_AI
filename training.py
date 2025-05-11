@@ -81,7 +81,7 @@ def run_self_play_worker(worker_id, model_path, games_per_worker):
 def main():
     multiprocessing.set_start_method('spawn', force=True)
 
-    model_path = "model.pt"
+    model_path = "data/model.pt"
     model = AlphaZeroNet()
     if os.path.exists(model_path):
         model.load_state_dict(torch.load(model_path, map_location=device))

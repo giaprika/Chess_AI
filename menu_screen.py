@@ -1,20 +1,14 @@
-# menu_screen.py
-
 import sys
 import pygame
 import pygame_menu
 
-# Constants (dùng cho menu)
-MENU_WIDTH, MENU_HEIGHT = 540, 360
+from config import *
 
 class MenuScreen:
-    def __init__(self, screen, start_pvp, start_pvc):
+    def __init__(self, screen):
         self.screen = screen
-        self.start_pvp = start_pvp
-        self.start_pvc = start_pvc
 
-        # Load background
-        self.bg = pygame.transform.scale(pygame.image.load("./data/images/bg.png"), (MENU_WIDTH, MENU_HEIGHT))
+        self.bg = pygame.transform.scale(pygame.image.load("./data/images/bg.png"), (WIDTH_WINDOW, HEIGHT_WINDOW))
 
         # Menu theme
         font = pygame_menu.font.FONT_8BIT
@@ -30,19 +24,22 @@ class MenuScreen:
         )
 
         # Create menu
-        self.menu = pygame_menu.Menu('Chess game - ', MENU_WIDTH, MENU_HEIGHT, theme=my_theme)
-        self.menu.add.button("Play", self.start_pvp)
-        self.menu.add.button("Play with AI", self.start_pvc)
+        self.menu = pygame_menu.Menu('Chess game - Group 12', 300, 300, theme=my_theme)
+        self.menu.add.button("Play",  button_id='PvP')
+        self.menu.add.button("Play with AI", button_id='PvC')
+        self.menu.add.button("AI with AI", button_id='CvC')
         self.menu.add.button("Quit", sys.exit, 1)
 
-    def main_loop(self):
-        while True:
+        self.running = True
+
+    def mainLoop(self):
+        while self.running:
             events = pygame.event.get()
-            for e in events:
-                if e.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
             self.menu.update(events)
-            self.screen.blit(self.bg, (0, 0))
+
+            self._draw_background()
             self.menu.draw(self.screen)
             pygame.display.update()
+
+    def _draw_background(self):
+        self.screen.blit(self.bg, (0, 0))
